@@ -19,23 +19,36 @@ import xtra.classes.DDSimpleLogger;
 public class RefactorizarColores {
     private static Color currentColor;
     private static Preferences preferences;
-
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // (1) comprobar el sistema Operativo y asegurarnos qeu solo funciona en linux
-        boolean mrjVersionExists = System.getProperty("mrj.version") != null;
-        boolean osNameExists = System.getProperty("os.name").startsWith("linux");
+        
+        DDLoggerInterface logger;
+        LinuxTest();
+        logger = InitializeDocFiles();
+        GetPreferences();
+        SetDefaultColor();
 
-        if ( !mrjVersionExists || !osNameExists)
-        {
-          System.err.println("Este programa no puede ejecutarse en sistemas operativo inferiores");
-          System.exit(1);
-        }
+
+    }
+
+    private static void SetDefaultColor() {
+        int r = preferences.getInt(CURTAIN_R, 0);
+        int g = preferences.getInt(CURTAIN_G, 0);
+        int b = preferences.getInt(CURTAIN_B, 0);
+        int a = preferences.getInt(CURTAIN_A, 255);
+        currentColor = new Color(r,g,b,a);
+    }
+
+    private static void GetPreferences() {
+        // (3, 4) recupera los ajustes del programa y establece el color por defecto.
+        preferences = Preferences.userNodeForPackage(this.getClass());
+    }
+
+    private static  DDLoggerInterface InitializeDocFiles() {
         int DEFAULT_LOG_LEVEL = 0;
-
-        // (2) inicializar ficheros de log
         int currentLoggingLevel = DEFAULT_LOG_LEVEL;
         String ERROR_LOG_FILENAME = "error";
         String WARNING_LOG_FILENAME = "warning";
@@ -53,16 +66,19 @@ public class RefactorizarColores {
         if (debugFile.exists()) currentLoggingLevel = DDLoggerInterface.LOG_DEBUG;
 
         logger = new DDSimpleLogger(CANON_DEBUG_FILENAME, currentLoggingLevel, true, true);
+        return logger;
+    }
 
-        // (3, 4) recupera los ajustes del programa y establece el color por defecto.
-        preferences = Preferences.userNodeForPackage(this.getClass());
-        int r = preferences.getInt(CURTAIN_R, 0);
-        int g = preferences.getInt(CURTAIN_G, 0);
-        int b = preferences.getInt(CURTAIN_B, 0);
-        int a = preferences.getInt(CURTAIN_A, 255);
-        currentColor = new Color(r,g,b,a);
-
-
+    private static void LinuxTest() {
+        // (1) comprobar el sistema Operativo y asegurarnos qeu solo funciona en linux
+        boolean mrjVersionExists = System.getProperty("mrj.version") != null;
+        boolean osNameExists = System.getProperty("os.name").startsWith("linux");
+        
+        if ( !mrjVersionExists || !osNameExists)
+        {
+            System.err.println("Este programa no puede ejecutarse en sistemas operativo inferiores");
+            System.exit(1);
+        }
     }
     
 }
